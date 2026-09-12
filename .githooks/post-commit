@@ -1,5 +1,26 @@
 #!/bin/sh
 
+# The amend is guarded so the post-commit hook does not call itself forever.
+if [ "$BALL_TERRITORY_LOGGING" = "1" ]; then
+  exit 0
+fi
+
+ROOT="$(git rev-parse --show-toplevel)"
+LOG="$ROOT/CHANGELOG.md"
+SUMMARY="$(git log -1 --pretty=%s)"
+STAMP="$(git log -1 --pretty=%aI)"
+
+{
+  printf '\n## %s · %s\n\n' "$STAMP" "$SUMMARY"
+  printf '%s\n' '- 本次提交涉及文件：'
+  git diff-tree --no-commit-id --name-only -r HEAD | while IFS= read -r file; do
+    printf '%s\n' "- $file"
+  done
+} >> "$LOG"
+
+git add "$LOG"
+BALL_TERRITORY_LOGGING=1 git commit --amend --no-edit --no-verify >/dev/null || exit 1
+
 if git remote get-url origin >/dev/null 2>&1; then
   git push origin HEAD
 else

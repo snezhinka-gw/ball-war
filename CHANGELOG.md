@@ -10,9 +10,9 @@
 - 基地支持自动发球和界面手动发球。
 - 增加基地状态 HUD。
 
-## 自动更新记录
+## 2026-09-12T13:51:02+08:00 · Finalize automatic logging and push hook
 
 - 本次提交涉及文件：
-- .githooks/commit-msg
+- .githooks/post-commit
 - .githooks/pre-commit
 - CHANGELOG.md
