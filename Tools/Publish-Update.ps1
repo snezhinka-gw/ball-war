@@ -1,27 +1,10 @@
 param(
     [Parameter(Mandatory = $true)]
-    [string]$Summary,
-
-    [string[]]$Changes = @()
+    [string]$Summary
 )
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $projectRoot
-
-$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"
-$logPath = Join-Path $projectRoot "CHANGELOG.md"
-$logEntry = @(
-    "",
-    "## $timestamp · $Summary",
-    "",
-    "- 更新摘要：$Summary"
-)
-
-foreach ($change in $Changes) {
-    $logEntry += "- $change"
-}
-
-Add-Content -LiteralPath $logPath -Value ($logEntry -join [Environment]::NewLine) -Encoding UTF8
 git add --all
 
 $stagedFiles = @(git diff --cached --name-only)
