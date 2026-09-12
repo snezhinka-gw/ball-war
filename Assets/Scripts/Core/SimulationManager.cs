@@ -16,7 +16,9 @@ public sealed class SimulationManager : MonoBehaviour
     private readonly List<BaseStation> bases = new List<BaseStation>();
     private readonly List<TeamRuntime> teams = new List<TeamRuntime>();
     private Sprite ballSprite;
-    private Sprite baseSprite;
+    private Sprite baseCoreSprite;
+    private Sprite baseEdgeSprite;
+    private Sprite turretSprite;
     private bool initialized;
 
     public SimulationSettings Settings { get; private set; }
@@ -49,7 +51,9 @@ public sealed class SimulationManager : MonoBehaviour
         Grid = new TerritoryGrid(settings.GridWidth, settings.GridHeight, settings.CellSize, colors);
         CreateCamera(settings);
         ballSprite = CreateBallSprite();
-        baseSprite = CreateBaseSprite();
+        baseCoreSprite = CreateBaseCoreSprite();
+        baseEdgeSprite = CreateBaseEdgeSprite();
+        turretSprite = CreateTurretSprite();
         CreateBases();
         SpawnTeams();
         initialized = true;
@@ -174,7 +178,7 @@ public sealed class SimulationManager : MonoBehaviour
             return false;
         }
 
-        var direction = (-(Vector2)source.transform.position).normalized;
+        var direction = source.TurretDirection.normalized;
         if (direction.sqrMagnitude < 0.0001f)
         {
             direction = Vector2.up;
@@ -332,7 +336,7 @@ public sealed class SimulationManager : MonoBehaviour
             Grid.WorldToCell(basePosition, out var centerCell);
             Grid.SeedTeamArea(teamId, centerCell, Settings.SpawnRadius);
 
-            var direction = (-basePosition).normalized;
+            var direction = bases[teamId].TurretDirection.normalized;
             if (direction.sqrMagnitude < 0.0001f)
             {
                 direction = Vector2.up;
@@ -356,7 +360,11 @@ public sealed class SimulationManager : MonoBehaviour
         {
             var baseObject = new GameObject($"{teams[teamId].Name}_基地");
             var baseStation = baseObject.AddComponent<BaseStation>();
-            baseStation.Initialize(this, teamId, positions[teamId], baseSprite);
+            var basePosition = Grid.ClampWorldPosition(
+                positions[teamId],
+                Settings.BaseRadius + Settings.BallRadius);
+            baseStation.Initialize(this, teamId, basePosition, baseCoreSprite, baseEdgeSprite, turretSprite);
+            baseStation.AimToward(-basePosition);
             bases.Add(baseStation);
         }
     }
@@ -371,15 +379,13 @@ public sealed class SimulationManager : MonoBehaviour
 
     private Vector2[] GetBasePositions()
     {
-        var mapWidth = Settings.GridWidth * Settings.CellSize;
-        var mapHeight = Settings.GridHeight * Settings.CellSize;
-        return new[]
+        var positions = new Vector2[teams.Count];
+        for (var i = 0; i < teams.Count; i++)
         {
-            new Vector2(-mapWidth * 0.34f, -mapHeight * 0.34f),
-            new Vector2(mapWidth * 0.34f, mapHeight * 0.34f),
-            new Vector2(-mapWidth * 0.34f, mapHeight * 0.34f),
-            new Vector2(mapWidth * 0.34f, -mapHeight * 0.34f)
-        };
+            positions[i] = Settings.Teams[i].BasePosition;
+        }
+
+        return positions;
     }
 
     private void UpdateTeamStats()
@@ -458,29 +464,74 @@ public sealed class SimulationManager : MonoBehaviour
         return Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), size);
     }
 
-    private static Sprite CreateBaseSprite()
+    private static Sprite CreateBaseCoreSprite()
     {
         const int size = 64;
         var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
         {
-            name = "BaseSprite",
+            name = "BaseCoreSprite",
             filterMode = FilterMode.Bilinear
         };
         var center = (size - 1) * 0.5f;
-        var outerRadius = size * 0.46f;
-        var innerRadius = size * 0.34f;
+        var radius = size * 0.46f;
         for (var x = 0; x < size; x++)
         {
             for (var y = 0; y < size; y++)
             {
                 var distance = Vector2.Distance(new Vector2(x, y), new Vector2(center, center));
-                texture.SetPixel(x, y, distance <= outerRadius
-                    ? distance <= innerRadius ? Color.white : new Color(1f, 1f, 1f, 0.58f)
+                texture.SetPixel(x, y, distance <= radius ? Color.white : Color.clear);
+            }
+        }
+
+        texture.Apply(false);
+        return Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), size);
+    }
+
+    private static Sprite CreateBaseEdgeSprite()
+    {
+        const int size = 64;
+        var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+        {
+            name = "BaseEdgeSprite",
+            filterMode = FilterMode.Bilinear
+        };
+        var center = (size - 1) * 0.5f;
+        var outerRadius = size * 0.49f;
+        var innerRadius = size * 0.42f;
+        for (var x = 0; x < size; x++)
+        {
+            for (var y = 0; y < size; y++)
+            {
+                var distance = Vector2.Distance(new Vector2(x, y), new Vector2(center, center));
+                texture.SetPixel(x, y, distance <= outerRadius && distance >= innerRadius
+                    ? Color.white
                     : Color.clear);
             }
         }
 
         texture.Apply(false);
         return Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), size);
+    }
+
+    private static Sprite CreateTurretSprite()
+    {
+        const int size = 64;
+        var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+        {
+            name = "BaseTurretSprite",
+            filterMode = FilterMode.Bilinear
+        };
+        for (var x = 0; x < size; x++)
+        {
+            for (var y = 0; y < size; y++)
+            {
+                var inBarrel = x >= 5 && x <= 58 && y >= 27 && y <= 36;
+                var inMuzzle = x >= 52 && x <= 61 && y >= 24 && y <= 39;
+                texture.SetPixel(x, y, inBarrel || inMuzzle ? Color.white : Color.clear);
+            }
+        }
+
+        texture.Apply(false);
+        return Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.10f, 0.5f), size);
     }
 }

@@ -26,3 +26,13 @@
 
 - 本次提交涉及文件：
 - "Docs/\347\220\203\347\220\203\351\242\206\345\234\237\346\210\230\344\272\211_\345\210\266\344\275\234\346\200\235\350\267\257\344\270\216\344\273\273\345\212\241\351\234\200\346\261\202.md"
+
+## 2026-09-12T14:52:58+08:00 · Add configurable start page and base turrets
+
+- 本次提交涉及文件：
+- Assets/Scenes/MainScene.unity
+- Assets/Scripts/Base/BaseStation.cs
+- Assets/Scripts/Core/GameBootstrap.cs
+- Assets/Scripts/Core/SimulationManager.cs
+- Assets/Scripts/Core/SimulationSettings.cs
+- README.md

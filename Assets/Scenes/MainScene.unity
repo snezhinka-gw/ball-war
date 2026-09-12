@@ -44,8 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b6a7b4b9f3e4b469d3e7a4a8c0f7c11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridWidth: 128
-  gridHeight: 128
+  gridWidth: 256
+  gridHeight: 256
   cellSize: 0.1
-  ballsPerTeam: 10
-  matchDuration: 300
+  ballsPerTeam: 16
