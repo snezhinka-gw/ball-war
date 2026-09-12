@@ -1,0 +1,16 @@
+#!/bin/sh
+
+ROOT="$(git rev-parse --show-toplevel)"
+LOG="$ROOT/CHANGELOG.md"
+
+{
+  printf '\n## 自动更新记录\n\n'
+  printf '%s\n' '- 本次提交涉及文件：'
+  while IFS= read -r file; do
+    printf '%s\n' "- $file"
+  done <<EOF
+$(git diff --cached --name-only)
+EOF
+} >> "$LOG"
+
+git add "$LOG"
