@@ -16,3 +16,8 @@
 - .githooks/post-commit
 - .githooks/pre-commit
 - CHANGELOG.md
+
+## 2026-09-12T13:51:36+08:00 · Document Git update workflow
+
+- 本次提交涉及文件：
+- README.md

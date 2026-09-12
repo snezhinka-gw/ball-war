@@ -21,6 +21,21 @@
 
 首版使用运行时生成的几何图形，不需要额外美术素材。
 
+## Git 更新机制
+
+项目已经初始化为 Git 仓库，并配置了自动更新钩子：
+
+- 每次提交后自动把提交标题、时间和变更文件写入 `CHANGELOG.md`。
+- 配置 `origin` 远程仓库后，每次提交会自动执行 `git push origin HEAD`。
+- 也可以使用 `Tools/Publish-Update.ps1 -Summary "本次更新说明"` 完成暂存、提交和上传。
+
+首次连接云仓库时，需要在本项目目录执行：
+
+```powershell
+git remote add origin <你的远程仓库地址>
+git push -u origin main
+```
+
 ## 验证说明
 
 已使用本机 C# 编译器检查全部脚本的语法及 UnityEngine API 引用。Unity 编辑器的无界面启动在当前电脑上停留在许可证/编辑器初始化阶段，因此首次运行请在 Unity Hub 中手动打开项目并点击 Play。
